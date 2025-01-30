@@ -99,7 +99,8 @@ def get_jpg_file(from_time,to_time):
         value += 1
     plt.gcf().autofmt_xdate()
     plt.savefig('static/images/lastday.png')
-
+    archive_filename='static/archive/'+str(from_time)+'_'+str(to_time)+".png"
+    plt.savefig(archive_filename)
 
 if __name__ == '__main__':
     # last 24 hours
