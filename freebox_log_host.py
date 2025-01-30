@@ -52,7 +52,7 @@ async def demo():
     print("hosts_actives :")
     for h in fbx_lan_hosts:
         if h['active']:
-            current_datetime = datetime.timestamp(datetime.now())
+            current_datetime = int(datetime.timestamp(datetime.now()))
             datas = (current_datetime,h['id'],h['primary_name'],h['host_type'],h['first_activity'],h['last_activity'],h['last_time_reachable'])
             sql="INSERT INTO devices(timestamp, device_id, primary_name, host_type, first_activity, last_activity, last_time_reachable) VALUES"+str(datas)
             print(datas)
