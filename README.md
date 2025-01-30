@@ -26,7 +26,6 @@ git clone git@github.com:AlexandreCo/logger.git tests/
 
 ```
 crontab -e
-write
 */5 * * * * /home/freebox/venv/bin/python /home/freebox/freebox-api/tests/freebox_log_host.py
 ```
 
@@ -42,8 +41,25 @@ write
 ~/venv/bin/pip install matplotlib
 ```
 
-## Run flask
+## Run flask server
 
 ```
-/home/freebox/venv/bin/flask --app '/home/freebox/freebox-api/tests/log_server.py' run --host=0.0.0.0
+$ cat server.sh
+#!/bin/bash
+cd /home/freebox/freebox-api/tests/flask
+/home/freebox/venv/bin/flask --app '/home/freebox/freebox-api/tests/flask/log_server.py'  run --host=0.0.0.0
+```
+
+## autostart server
+
+```
+crontab -e
+@reboot /home/freebox/server.sh
+```
+
+## take snapshot everyday
+
+```
+crontab -e
+0 0 * * * curl 127.0.0.1:5000
 ```
