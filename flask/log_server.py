@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from database import *
 
 app = Flask(__name__)
 
@@ -50,7 +51,9 @@ def data():
     # last 24 hours
     # to_time=int(datetime.timestamp(datetime.now()))
     # from_time=to_time-24*60*60
-    rows = get_data(host,from_time,to_time)
+    db = Database()
+    rows = db.get_host_data(host,from_time,to_time)
+    db.close()
     html+="<table class=\"table\">"
     html+="<tr><th>Timestamp</th><th>Device id</th><th>Name</th><th>type</th><th>First activity</th><th>Last activity</th><th>Last time reachable</th>"
     for row in rows:
@@ -59,44 +62,61 @@ def data():
     return html
 
 database='/home/freebox/hosts.db'
-def generate_graph(plt,host,value,from_time,to_time):
-    rows = get_data(host,from_time,to_time)
+def generate_graph(plt,host,offset,from_time,to_time):
+    #display only if host is active during selected time range
+    display = False
+    db = Database()
+    rows = db.get_host_data(host)
+    db.close()
     last_activity = []
+    values = []
+    # first xy
+    last_activity.append(datetime.fromtimestamp(from_time))
+    values.append(rows[0][cDevices_values]+offset)
+
     for row in rows:
-        last_activity.append(datetime.fromtimestamp(int(row[6])))
+        state=row[cDevices_values]
+
+
+        if values[-1] == state + offset :
+            #last elements is the same as new one
+            last_activity.append(datetime.fromtimestamp(int(row[cDevices_timestamp])))
+            values.append(state + offset)
+        else :
+            if state == cValue_active :
+                last_activity.append(datetime.fromtimestamp(int(row[cDevices_timestamp] - 1)))
+                values.append(cValue_inactive + offset)
+                last_activity.append(datetime.fromtimestamp(int(row[cDevices_timestamp])))
+                values.append(cValue_active + offset)
+            else :
+                last_activity.append(datetime.fromtimestamp(int(row[cDevices_timestamp] - 1)))
+                values.append(cValue_active + offset)
+                last_activity.append(datetime.fromtimestamp(int(row[cDevices_timestamp])))
+                values.append(cValue_inactive + offset)
+
+        if state == cValue_active:
+            display=True
+    # first xy
+    last_activity.append(datetime.fromtimestamp(to_time))
+    values.append(values[-1])
 
     #last_activity
-    values = [value for ts in last_activity]
-    plt.plot(last_activity, values, 'o', label=host)
-    plt.legend()
-
-def get_data(host,from_time,to_time):
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-    sql='SELECT * FROM devices where primary_name is "' + host + '" and timestamp between ' + str(from_time) + ' and ' + str(to_time)
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-def getHosts(from_time,to_time):
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-    sql="SELECT DISTINCT primary_name FROM devices where timestamp between " + str(from_time) + " and " + str(to_time)
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
+    if display :
+        plt.plot(last_activity, values, '-', label=host)
+        plt.legend()
+    return display
 
 def get_jpg_file(from_time,to_time):
     plt.cla()
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y %H:%M:%S'))
     plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=5))
-    hosts=getHosts(from_time,to_time)
-    value = 1
+    db=Database()
+    hosts=db.get_hosts()
+    db.close()
+    offset = 1
     for host in hosts:
-        generate_graph(plt, host[0], value,from_time,to_time)
-        value += 1
+        if generate_graph(plt, host[0], offset,from_time,to_time):
+            offset += 1.5
     plt.gcf().autofmt_xdate()
     plt.savefig('static/images/lastday.png')
     archive_filename='static/archive/'+str(from_time)+'_'+str(to_time)+".png"
