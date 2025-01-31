@@ -26,7 +26,7 @@ git clone git@github.com:AlexandreCo/logger.git tests/
 
 ```
 crontab -e
-*/5 * * * * /home/freebox/venv/bin/python /home/freebox/freebox-api/tests/freebox_log_host.py
+*/5 * * * * /home/freebox/venv/bin/python /home/freebox/freebox-api/tests/flask/freebox_log_host.py
 ```
 
 ## install flask
@@ -47,7 +47,7 @@ crontab -e
 $ cat server.sh
 #!/bin/bash
 cd /home/freebox/freebox-api/tests/flask
-/home/freebox/venv/bin/flask --app '/home/freebox/freebox-api/tests/flask/log_server.py'  run --host=0.0.0.0
+/home/freebox/venv/bin/flask --app '/home/freebox/freebox-api/tests/flask/webserver.py'  run --host=0.0.0.0
 ```
 
 ## autostart server
