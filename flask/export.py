@@ -4,15 +4,13 @@ import matplotlib.ticker as ticker
 
 from database import *
 
-
-def generate_graph(path,plt,host,offset,from_time,to_time):
-    #display only if host is active during selected time range
-    display = False
+def get_data(path,host,offset,from_time,to_time):
     db = Database(path)
     rows = db.get_host_data(host)
     db.close()
     last_activity = []
     values = []
+    display=False
 
     for row in rows:
         state=row[cDevices_values]
@@ -50,13 +48,20 @@ def generate_graph(path,plt,host,offset,from_time,to_time):
 
     #last_activity
     if display :
-        # print(last_activity)
-        # print(values)
         last_activity.pop()
         last_activity.pop()
         values.pop()
         values.pop()
-        plt.plot(last_activity, values, '-', label=host)
+
+    return display, values, last_activity
+
+
+def generate_graph(path,plt,host,offset,from_time,to_time):
+    #display only if host is active during selected time range
+    display, states, times = get_data(path,host,offset,from_time,to_time)
+    #last_activity
+    if display :
+        plt.plot(times, states, '-', label=host)
     return display
 
 def get_jpg_file(path,from_time,to_time):

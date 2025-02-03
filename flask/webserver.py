@@ -41,22 +41,26 @@ def data():
     else:
         from_time = int(fromtime)
 
-    print(host, from_time, to_time)
+    display,datas,atimes=get_data('/home/freebox/hosts.db', host, 0, from_time, to_time)
+    if not display :
+        return "<h2>unknow host<h2>"
 
     html = "host : " + host + "<br>" + str(datetime.fromtimestamp(int(from_time))) + "<br>" + str(
         datetime.fromtimestamp(int(to_time))) + "<br>"
 
-    # last 24 hours
-    # to_time=int(datetime.timestamp(datetime.now()))
-    # from_time=to_time-24*60*60
-    db = Database()
-    rows = db.get_host_data(host)
-    db.close()
+
     html += "<table class=\"table\">"
-    html += "<tr><th>Timestamp</th><th>Device id</th><th>Name</th><th>type</th><th>First activity</th><th>Last activity</th><th>Last time reachable</th>"
-    for row in rows:
-        html += "<tr><td>" + str(datetime.fromtimestamp(int(row[1]))) + "</td><td>" + row[2] + "</td><td>" + row[
-            3] + "</td><td>" + row[4] + "</td><td>" + str(datetime.fromtimestamp(int(row[5]))) + "</td><td>" + str(
-            datetime.fromtimestamp(int(row[6]))) + "</td><td>" + str(datetime.fromtimestamp(int(row[7]))) + "</td></tr>"
+    html += "<tr><th>Timestamp</th><th>state</th>"
+    index=0
+    for data in datas:
+        print(atimes[index])
+        if datas[index] == cValue_inactive :
+            state='inactif'
+        else:
+            state = 'actif'
+
+        html += "<tr><td>" + str(atimes[index]) + "</td><td>" + state + "</td></tr>"
+        index += 1
     html += "</table><style>table, th, td {  border: 1px solid black;  border-collapse: collapse;}</style>"
+
     return html
