@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
+
 from database import *
 
 
@@ -11,37 +13,34 @@ def generate_graph(path,plt,host,offset,from_time,to_time):
     db.close()
     last_activity = []
     values = []
-    pct_size=0.75
-    # first xy
-    # last_activity.append(datetime.fromtimestamp(rows[0][cDevices_timestamp]))
-    # values.append(rows[0][cDevices_values]+offset)
+
     for row in rows:
         state=row[cDevices_values]
         timestamp=int(row[cDevices_timestamp])
 
         if not len(values):
             if state == cValue_inactive:
-                values.append(cValue_inactive*pct_size + offset)
+                values.append(cValue_inactive + offset)
             else :
-                values.append(cValue_active*pct_size + offset)
+                values.append(cValue_active + offset)
             last_activity.append(datetime.fromtimestamp(from_time))
 
         if timestamp < from_time :
             if state == cValue_active:
-                values[0]=(cValue_inactive*pct_size + offset)
+                values[0]=(cValue_inactive + offset)
             else :
-                values[0]=(cValue_active*pct_size + offset)
+                values[0]=(cValue_active + offset)
         else :
             if state == cValue_inactive :
                 last_activity.append(datetime.fromtimestamp(timestamp - 1))
-                values.append(cValue_inactive*pct_size + offset)
+                values.append(cValue_inactive + offset)
                 last_activity.append(datetime.fromtimestamp(timestamp))
-                values.append(cValue_active*pct_size + offset)
+                values.append(cValue_active + offset)
             else :
                 last_activity.append(datetime.fromtimestamp(timestamp - 1))
-                values.append(cValue_active*pct_size + offset)
+                values.append(cValue_active + offset)
                 last_activity.append(datetime.fromtimestamp(timestamp))
-                values.append(cValue_inactive*pct_size + offset)
+                values.append(cValue_inactive + offset)
 
         if state == cValue_active:
             display=True
@@ -58,22 +57,32 @@ def generate_graph(path,plt,host,offset,from_time,to_time):
         values.pop()
         values.pop()
         plt.plot(last_activity, values, '-', label=host)
-        plt.legend()
     return display
 
 def get_jpg_file(path,from_time,to_time):
     plt.cla()
+    plt.subplots()
+    plt.subplots_adjust(left=0.200)
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y %H:%M:%S'))
     plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=5))
     db=Database(path)
     hosts=db.get_hosts()
     db.close()
     offset = 1
-    #print(hosts)
+    y_order_label=[]
+    y_order_pos=[]
+
     for host in hosts:
         if generate_graph(path,plt, host[0], offset,from_time,to_time):
+            y_order_label.append(host[0])
+            y_order_pos.append(offset)
             offset += 1.5
+
     plt.gcf().autofmt_xdate()
+    plt.gca().yaxis.set_major_locator(ticker.FixedLocator(y_order_pos))
+    plt.gca().yaxis.set_major_formatter(ticker.FixedFormatter(y_order_label))
+    plt.ylim(bottom=0)
+
     plt.savefig('static/images/lastday.png')
     archive_filename='static/archive/'+str(from_time)+'_'+str(to_time)+".png"
     plt.savefig(archive_filename)
