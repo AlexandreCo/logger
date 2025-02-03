@@ -11,6 +11,7 @@ def generate_graph(path,plt,host,offset,from_time,to_time):
     db.close()
     last_activity = []
     values = []
+    pct_size=0.75
     # first xy
     # last_activity.append(datetime.fromtimestamp(rows[0][cDevices_timestamp]))
     # values.append(rows[0][cDevices_values]+offset)
@@ -20,27 +21,27 @@ def generate_graph(path,plt,host,offset,from_time,to_time):
 
         if not len(values):
             if state == cValue_inactive:
-                values.append(cValue_inactive + offset)
+                values.append(cValue_inactive*pct_size + offset)
             else :
-                values.append(cValue_active + offset)
+                values.append(cValue_active*pct_size + offset)
             last_activity.append(datetime.fromtimestamp(from_time))
 
         if timestamp < from_time :
-            if state == cValue_inactive:
-                values[0]=(cValue_inactive + offset)
+            if state == cValue_active:
+                values[0]=(cValue_inactive*pct_size + offset)
             else :
-                values[0]=(cValue_active + offset)
-
-        if state == cValue_inactive :
-            last_activity.append(datetime.fromtimestamp(timestamp - 1))
-            values.append(cValue_inactive + offset)
-            last_activity.append(datetime.fromtimestamp(timestamp))
-            values.append(cValue_active + offset)
+                values[0]=(cValue_active*pct_size + offset)
         else :
-            last_activity.append(datetime.fromtimestamp(timestamp - 1))
-            values.append(cValue_active + offset)
-            last_activity.append(datetime.fromtimestamp(timestamp))
-            values.append(cValue_inactive + offset)
+            if state == cValue_inactive :
+                last_activity.append(datetime.fromtimestamp(timestamp - 1))
+                values.append(cValue_inactive*pct_size + offset)
+                last_activity.append(datetime.fromtimestamp(timestamp))
+                values.append(cValue_active*pct_size + offset)
+            else :
+                last_activity.append(datetime.fromtimestamp(timestamp - 1))
+                values.append(cValue_active*pct_size + offset)
+                last_activity.append(datetime.fromtimestamp(timestamp))
+                values.append(cValue_inactive*pct_size + offset)
 
         if state == cValue_active:
             display=True
