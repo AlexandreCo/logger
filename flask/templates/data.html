@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hosts log page</title>
+</head>
+
+<body>
+  <h3>host : {{host}}</h3>
+    <h4>valid arguments are from and to </h4>
+    <table class=\"table\">
+        <tr>
+            <th>Timestamp</th>
+            <th>state</th>
+        </tr>
+      {% for l in datas %}
+        <tr>
+            <td>
+
+                {{l[1]}}
+            </td>
+            <td>
+                {% if  l[0] == 0 %}
+                    inactive
+                {% else %}
+                    active
+                {% endif %}
+            </td>
+
+        </tr>
+      {% endfor %}
+    </table>
+</body>
+</html>
+
+<style>
+  table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+  }
+</style>

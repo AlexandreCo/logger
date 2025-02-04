@@ -76,12 +76,13 @@ def get_jpg_file(path,from_time,to_time):
     offset = 1
     y_order_label=[]
     y_order_pos=[]
-
+    list_hosts=[]
     for host in hosts:
         if generate_graph(path,plt, host[0], offset,from_time,to_time):
             y_order_label.append(host[0])
             y_order_pos.append(offset)
             offset += 1.5
+            list_hosts.append(host[0])
 
     plt.gcf().autofmt_xdate()
     plt.gca().yaxis.set_major_locator(ticker.FixedLocator(y_order_pos))
@@ -92,6 +93,7 @@ def get_jpg_file(path,from_time,to_time):
     archive_filename='static/archive/'+str(from_time)+'_'+str(to_time)+".png"
     plt.savefig(archive_filename)
     #plt.show()
+    return list_hosts
 
 if __name__ == '__main__':
     # last 24 hours

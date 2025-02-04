@@ -19,8 +19,8 @@ def home():
     else:
         from_time = int(fromtime)
 
-    get_jpg_file('/home/freebox/hosts.db',from_time, to_time)
-    return render_template('index.html')
+    list_hosts=get_jpg_file('/home/freebox/hosts.db',from_time, to_time)
+    return render_template('index.html',hosts=list_hosts)
 
 
 @app.route('/data', methods=['GET'])
@@ -41,26 +41,9 @@ def data():
     else:
         from_time = int(fromtime)
 
-    display,datas,atimes=get_data('/home/freebox/hosts.db', host, 0, from_time, to_time)
+    display,list_datas,list_times=get_data('/home/freebox/hosts.db', host, 0, from_time, to_time)
     if not display :
         return "<h2>unknow host<h2>"
 
-    html = "host : " + host + "<br>" + str(datetime.fromtimestamp(int(from_time))) + "<br>" + str(
-        datetime.fromtimestamp(int(to_time))) + "<br>"
-
-
-    html += "<table class=\"table\">"
-    html += "<tr><th>Timestamp</th><th>state</th>"
-    index=0
-    for data in datas:
-        print(atimes[index])
-        if datas[index] == cValue_inactive :
-            state='inactif'
-        else:
-            state = 'actif'
-
-        html += "<tr><td>" + str(atimes[index]) + "</td><td>" + state + "</td></tr>"
-        index += 1
-    html += "</table><style>table, th, td {  border: 1px solid black;  border-collapse: collapse;}</style>"
-
-    return html
+    datas=zip(list_datas,list_times)
+    return render_template('data.html',datas=datas,host=host)
