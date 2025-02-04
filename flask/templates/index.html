@@ -9,7 +9,19 @@
 
 <body>
   <h3>Hosts daily logs</h3>
-    <h4>valid arguments are from and to </h4>
+    <form action="" method="POST">
+      <p>
+        <label for="from">From : </label>
+        <input type="text" name="from" id ="from" value={{from_time}}>
+      </p>
+      <p>
+        <label for="to">To : </label>
+        <input type="text" name="to" id ="to" value={{to_time}}>
+      </p>
+      <p>
+        <input type="submit" value="send">
+      </p>
+    </form>
     <img src="{{ url_for('static', filename='images/lastday.png') }}" class="image" />
     <ul>
       {% for host in hosts %}

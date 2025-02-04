@@ -11,7 +11,7 @@ def get_data(path,host,offset,from_time,to_time):
     last_activity = []
     values = []
     display=False
-
+    remove_last=True
     for row in rows:
         state=row[cDevices_values]
         timestamp=int(row[cDevices_timestamp])
@@ -29,16 +29,20 @@ def get_data(path,host,offset,from_time,to_time):
             else :
                 values[0]=(cValue_active + offset)
         else :
-            if state == cValue_inactive :
-                last_activity.append(datetime.fromtimestamp(timestamp - 1))
-                values.append(cValue_inactive + offset)
-                last_activity.append(datetime.fromtimestamp(timestamp))
-                values.append(cValue_active + offset)
+            if timestamp < to_time:
+                if state == cValue_inactive :
+                    last_activity.append(datetime.fromtimestamp(timestamp - 1))
+                    values.append(cValue_inactive + offset)
+                    last_activity.append(datetime.fromtimestamp(timestamp))
+                    values.append(cValue_active + offset)
+                else :
+                    last_activity.append(datetime.fromtimestamp(timestamp - 1))
+                    values.append(cValue_active + offset)
+                    last_activity.append(datetime.fromtimestamp(timestamp))
+                    values.append(cValue_inactive + offset)
             else :
-                last_activity.append(datetime.fromtimestamp(timestamp - 1))
-                values.append(cValue_active + offset)
-                last_activity.append(datetime.fromtimestamp(timestamp))
-                values.append(cValue_inactive + offset)
+                remove_last = False
+
 
         if state == cValue_active:
             display=True
@@ -47,7 +51,7 @@ def get_data(path,host,offset,from_time,to_time):
     values.append(values[-1])
 
     #last_activity
-    if display :
+    if display and remove_last :
         last_activity.pop()
         last_activity.pop()
         values.pop()
