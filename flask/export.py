@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
-
+import argparse
 from database import *
 
-def get_data(path,host,offset,from_time,to_time):
+def get_data(path,host,offset,ft,tt):
     db = Database(path)
     rows = db.get_host_data(host)
     db.close()
@@ -21,15 +21,15 @@ def get_data(path,host,offset,from_time,to_time):
                 values.append(cValue_inactive + offset)
             else :
                 values.append(cValue_active + offset)
-            last_activity.append(datetime.fromtimestamp(from_time))
+            last_activity.append(datetime.fromtimestamp(ft))
 
-        if timestamp < from_time :
+        if timestamp < ft :
             if state == cValue_active:
                 values[0]=(cValue_inactive + offset)
             else :
                 values[0]=(cValue_active + offset)
         else :
-            if timestamp < to_time:
+            if timestamp < tt:
                 if state == cValue_inactive :
                     last_activity.append(datetime.fromtimestamp(timestamp - 1))
                     values.append(cValue_inactive + offset)
@@ -47,7 +47,7 @@ def get_data(path,host,offset,from_time,to_time):
         if state == cValue_active:
             display=True
     # first xy
-    last_activity.append(datetime.fromtimestamp(to_time))
+    last_activity.append(datetime.fromtimestamp(tt))
     values.append(values[-1])
 
     #last_activity
@@ -60,15 +60,15 @@ def get_data(path,host,offset,from_time,to_time):
     return display, values, last_activity
 
 
-def generate_graph(path,plt,host,offset,from_time,to_time):
+def generate_graph(path,p,host,offset,ft,tt):
     #display only if host is active during selected time range
-    display, states, times = get_data(path,host,offset,from_time,to_time)
+    display, states, times = get_data(path,host,offset,ft,tt)
     #last_activity
     if display :
-        plt.plot(times, states, '-', label=host)
+        p.plot(times, states, '-', label=host)
     return display
 
-def get_jpg_file(path,from_time,to_time):
+def get_jpg_file(path,ft,tt):
     plt.cla()
     plt.subplots()
     plt.subplots_adjust(left=0.200)
@@ -82,7 +82,7 @@ def get_jpg_file(path,from_time,to_time):
     y_order_pos=[]
     list_hosts=[]
     for host in hosts:
-        if generate_graph(path,plt, host[0], offset,from_time,to_time):
+        if generate_graph(path,plt, host[0], offset,ft,tt):
             y_order_label.append(host[0])
             y_order_pos.append(offset)
             offset += 1.5
@@ -94,14 +94,26 @@ def get_jpg_file(path,from_time,to_time):
     plt.ylim(bottom=0)
 
     plt.savefig('static/images/lastday.png')
-    archive_filename='static/archive/'+str(from_time)+'_'+str(to_time)+".png"
+    archive_filename='static/archive/'+str(ft)+'_'+str(tt)+".png"
     plt.savefig(archive_filename)
     #plt.show()
     return list_hosts
 
+def parse_args():
+    new_parser = argparse.ArgumentParser(description='export db data.')
+    new_parser.add_argument('--end', help='export end time (timestamp)', default=int(datetime.timestamp(datetime.now())), type=int)
+    new_parser.add_argument('--start', help='export start time (timestamp)', default=int(datetime.timestamp(datetime.now())), type=int)
+    return new_parser.parse_args()
+
 if __name__ == '__main__':
     # last 24 hours
-    to_time=int(datetime.timestamp(datetime.now()))
-    from_time=to_time-60*60
+    args = parse_args()
+    if args.start >= args.end :
+        to_time=int(datetime.timestamp(datetime.now()))
+        from_time=to_time-24*60*60
+        print("default start and end export time")
+    else :
+        to_time=args.end
+        from_time = args.start
     get_jpg_file('hosts.db',from_time,to_time)
 
