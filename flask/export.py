@@ -95,8 +95,8 @@ def get_jpg_file(path,ft,tt):
     plt.ylim(bottom=0)
 
     plt.savefig('static/images/lastday.png')
-    archive_filename='static/archive/'+str(ft)+'_'+str(tt)+".png"
-    plt.savefig(archive_filename)
+    #archive_filename='static/archive/'+str(ft)+'_'+str(tt)+".png"
+    #plt.savefig(archive_filename)
     #plt.show()
     return list_hosts
 
