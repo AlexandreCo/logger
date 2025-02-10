@@ -91,6 +91,7 @@ def get_jpg_file(path,ft,tt):
     plt.gcf().autofmt_xdate()
     plt.gca().yaxis.set_major_locator(ticker.FixedLocator(y_order_pos))
     plt.gca().yaxis.set_major_formatter(ticker.FixedFormatter(y_order_label))
+    plt.gca().xaxis.set_major_locator(ticker.LinearLocator(5))
     plt.ylim(bottom=0)
 
     plt.savefig('static/images/lastday.png')
